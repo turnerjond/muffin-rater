@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muffin Rater 🫐</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fdf6ee; --ink:#1a0f00; --blue:#2e4fa3; --blue-light:#dce6ff;
+    --blue-deep:#1a2d6b; --muffin:#b5722a; --muffin-light:#f5e2c8;
+    --cream:#fff9f2; --border:#e0c9a8; --text-muted:#7a6040; --tag-bg:#e8f0ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--ink);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:.6}
+  header{background:var(--blue-deep);color:#fff;padding:2rem 2rem 1.5rem;position:relative;overflow:hidden}
+  header::after{content:'🫐';position:absolute;right:-20px;top:-20px;font-size:8rem;opacity:.08;transform:rotate(-15deg)}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:900;letter-spacing:-.5px;line-height:1}
+  header h1 span{color:#a8c4ff}
+  header p{margin-top:.4rem;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+  .banner{background:#edfaf3;border-bottom:2px solid #4caf82;padding:.85rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .b-icon{font-size:1.3rem;flex-shrink:0}
+  .b-text{flex:1;min-width:160px}
+  .b-title{font-size:.72rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#1a6040}
+  .b-sub{font-size:.67rem;color:#2a8060;margin-top:.1rem}
+  .tabs{display:flex;border-bottom:2px solid var(--border);background:var(--cream);padding:0 1.5rem}
+  .tab{padding:1rem 1.5rem;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+  .tab:hover{color:var(--blue)}
+  .tab.active{color:var(--blue-deep);border-bottom-color:var(--blue)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .fw{max-width:680px;margin:0 auto;padding:2rem 1.5rem 4rem}
+  .sec{font-family:'Playfair Display',serif;font-style:italic;font-size:1.05rem;color:var(--text-muted);margin:2rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem}
+  .sec::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0}
+  .field{margin-bottom:1.4rem}
+  .field label{display:flex;justify-content:space-between;align-items:baseline;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.5rem}
+  .field label .wt{font-size:.65rem;color:var(--blue);font-weight:500}
+  .stars{display:flex;gap:.4rem}
+  .sbtn{width:40px;height:40px;border:2px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:#ccc;font-weight:700;font-family:'DM Mono',monospace;font-size:.85rem}
+  .sbtn:hover{border-color:var(--blue);background:var(--blue-light);color:var(--blue-deep);transform:translateY(-2px)}
+  .sbtn.on{border-color:var(--blue);background:var(--blue);color:#fff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(46,79,163,.3)}
+  .rdesc{font-size:.65rem;color:var(--text-muted);margin-top:.35rem;letter-spacing:.03em;min-height:1em}
+  .tf{width:100%;padding:.75rem 1rem;font-family:'DM Mono',monospace;font-size:.85rem;border:2px solid var(--border);border-radius:8px;background:#fff;color:var(--ink);transition:border-color .2s;outline:none}
+  .tf:focus{border-color:var(--blue)}
+  .ddate{font-size:.85rem;color:var(--text-muted);padding:.75rem 1rem;background:var(--muffin-light);border:2px solid var(--border);border-radius:8px}
+  .savebtn{width:100%;padding:1rem;background:var(--blue-deep);color:#fff;border:none;border-radius:10px;font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;cursor:pointer;margin-top:2rem;transition:all .2s;letter-spacing:.02em}
+  .savebtn:hover{background:var(--blue);transform:translateY(-2px);box-shadow:0 6px 20px rgba(46,79,163,.35)}
+  .savebtn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .sp{background:var(--blue-deep);color:#fff;border-radius:12px;padding:1.25rem 1.5rem;margin-top:2rem;display:flex;align-items:center;justify-content:space-between}
+  .sp .lbl{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+  .sp .snum{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:900;letter-spacing:-1px;color:#a8c4ff}
+  .sbw{flex:1;margin:0 1.5rem;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+  .sbf{height:100%;background:linear-gradient(90deg,#a8c4ff,#fff);border-radius:3px;transition:width .4s ease}
+  .lbw{padding:1.5rem;max-width:800px;margin:0 auto}
+  .lbh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.5rem}
+  .lbt{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700}
+  .lbc{font-size:.7rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+  .empty{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+  .empty .ei{font-size:3rem;margin-bottom:1rem}
+  .empty p{font-size:.85rem;line-height:1.6}
+  .mc{background:#fff;border:2px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem;display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;transition:all .2s;position:relative;overflow:hidden}
+  .mc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .mc:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(46,79,163,.12);transform:translateY(-2px)}
+  .mc.r1::before{background:#f0a500}.mc.r2::before{background:#aaa}.mc.r3::before{background:var(--muffin)}
+  .rb{width:40px;height:40px;border-radius:50%;background:var(--blue-light);color:var(--blue-deep);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1rem;flex-shrink:0}
+  .mc.r1 .rb{background:#fef3d0;color:#a07000;font-size:1.2rem}.mc.r2 .rb{background:#f0f0f0;color:#666}.mc.r3 .rb{background:#f5e8d5;color:var(--muffin)}
+  .cm{min-width:0}
+  .cs{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cm2{font-size:.68rem;color:var(--text-muted);margin-top:.2rem;letter-spacing:.05em}
+  .ctags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}
+  .tag{font-size:.62rem;padding:.2rem .5rem;background:var(--tag-bg);color:var(--blue-deep);border-radius:4px;letter-spacing:.05em;text-transform:uppercase}
+  .csc{text-align:right;flex-shrink:0}
+  .bsc{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--blue-deep);line-height:1}
+  .scl{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.2rem}
+  .dtog{width:100%;background:none;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--blue);text-align:left;padding:.5rem 0 0;letter-spacing:.05em;text-transform:uppercase}
+  .cdet{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.5rem}
+  .di{background:var(--bg);border-radius:6px;padding:.4rem .6rem}
+  .dil{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+  .div2{font-size:.85rem;font-weight:500;color:var(--ink);margin-top:.1rem}
+  .pr{display:flex;gap:2px;margin-top:.2rem}
+  .pip{width:10px;height:6px;border-radius:2px;background:var(--border)}
+  .pip.on{background:var(--blue)}
+  .delbtn{position:absolute;top:.75rem;right:.75rem;background:none;border:1px solid var(--border);border-radius:4px;padding:.2rem .4rem;font-size:.65rem;color:var(--text-muted);cursor:pointer;transition:all .15s}
+  .delbtn:hover{background:#fee;border-color:#f66;color:#c00}
+  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--blue-deep);color:#fff;padding:.75rem 1.5rem;border-radius:40px;font-size:.8rem;font-family:'DM Mono',monospace;letter-spacing:.05em;transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:1000;box-shadow:0 8px 30px rgba(0,0,0,.25);white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(max-width:520px){
+    .mc{grid-template-columns:auto 1fr auto}
+    .cdet{grid-template-columns:repeat(2,1fr)}
+    .sbtn{width:34px;height:34px;font-size:.8rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Muffin <span>Rater</span></h1>
+  <p>Blueberry Muffin Rating System · Weighted Scoring</p>
+</header>
+
+<div class="banner">
+  <div class="b-icon">☁️</div>
+  <div class="b-text">
+    <div class="b-title">Google Sheets connected ✓</div>
+    <div class="b-sub">Ratings sync across all your devices automatically</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('rate',this)">🫐 Rate a Muffin</button>
+  <button class="tab" onclick="switchTab('board',this)">📋 Rankings</button>
+</div>
+
+<div id="panel-rate" class="panel active">
+  <div class="fw">
+    <div class="field">
+      <label>Date <span class="wt">auto-filled</span></label>
+      <div class="ddate" id="ddate">📅 —</div>
+    </div>
+    <div class="field">
+      <label>Store / Source <span class="wt">required</span></label>
+      <input type="text" class="tf" id="store" placeholder="e.g. Costco, Whole Foods, local bakery…" autocomplete="off">
+    </div>
+    <div class="sec">Blueberry Quality</div>
+    <div class="field"><label>Berry Quality <span class="wt">10%</span></label><div class="stars" id="stars-berryQuality"></div><div class="rdesc" id="desc-berryQuality"></div></div>
+    <div class="field"><label>Berry Size <span class="wt">10%</span></label><div class="stars" id="stars-berrySize"></div><div class="rdesc" id="desc-berrySize"></div></div>
+    <div class="field"><label>Berry Count <span class="wt">15%</span></label><div class="stars" id="stars-berryCount"></div><div class="rdesc" id="desc-berryCount"></div></div>
+    <div class="sec">Muffin Quality</div>
+    <div class="field"><label>Muffin Size <span class="wt">10%</span></label><div class="stars" id="stars-muffinSize"></div><div class="rdesc" id="desc-muffinSize"></div></div>
+    <div class="field"><label>Density <span class="wt">15%</span></label><div class="stars" id="stars-density"></div><div class="rdesc" id="desc-density"></div></div>
+    <div class="field"><label>Top Deliciousness <span class="wt">15%</span></label><div class="stars" id="stars-top"></div><div class="rdesc" id="desc-top"></div></div>
+    <div class="field"><label>Dough Flavor <span class="wt">15%</span></label><div class="stars" id="stars-doughFlavor"></div><div class="rdesc" id="desc-doughFlavor"></div></div>
+    <div class="sec">General</div>
+    <div class="field"><label>Cost Value <span class="wt">10%</span></label><div class="stars" id="stars-cost"></div><div class="rdesc" id="desc-cost"></div></div>
+    <div class="sp">
+      <div><div class="lbl">Weighted Score</div><div class="snum" id="live-score">—</div></div>
+      <div class="sbw"><div class="sbf" id="score-bar" style="width:0%"></div></div>
+      <div style="text-align:right"><div class="lbl">Out of</div><div class="snum" style="color:rgba(255,255,255,.3)">5.00</div></div>
+    </div>
+    <button class="savebtn" id="savebtn" onclick="submitMuffin()">Save this muffin →</button>
+  </div>
+</div>
+
+<div id="panel-board" class="panel">
+  <div class="lbw">
+    <div class="lbh">
+      <div class="lbt">Rankings</div>
+      <div class="lbc" id="lbc">0 muffins rated</div>
+    </div>
+    <div id="lb"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CRITERIA=[
+  {id:'berryQuality',label:'Berry Quality',weight:.10},
+  {id:'berrySize',   label:'Berry Size',   weight:.10},
+  {id:'berryCount',  label:'Berry Count',  weight:.15},
+  {id:'muffinSize',  label:'Muffin Size',  weight:.10},
+  {id:'density',     label:'Density',      weight:.15},
+  {id:'top',         label:'Top Deliciousness',weight:.15},
+  {id:'doughFlavor', label:'Dough Flavor', weight:.15},
+  {id:'cost',        label:'Cost Value',   weight:.10},
+];
+const DESCS={1:'Poor',2:'Below average',3:'Decent',4:'Very good',5:'Exceptional'};
+
+// ── Google Sheets URL ──────────────────────────────────────
+const GS_URL='https://script.google.com/macros/s/AKfycbzv9fExhHEqEjhRVZFTuzgrtJWXZCGaz66JnQDHuWcs91ATGwblHSyvMEqZWWlTTx-wcw/exec';
+
+// ── Google Sheets API ──────────────────────────────────────
+async function gsRead(){
+  const res=await fetch(GS_URL+'?action=read',{method:'GET',redirect:'follow'});
+  return res.json();
+}
+async function gsWrite(payload){
+  await fetch(GS_URL,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(payload)
+  });
+}
+async function gsAdd(entry){await gsWrite({action:'add',entry})}
+async function gsDelete(id){await gsWrite({action:'delete',id})}
+
+// ── Local cache (for offline resilience) ──────────────────
+function lLoad(){try{return JSON.parse(localStorage.getItem('muffins')||'[]')}catch{return[]}}
+function lSave(a){localStorage.setItem('muffins',JSON.stringify(a))}
+
+// ── Stars ──────────────────────────────────────────────────
+const ratings={};
+CRITERIA.forEach(c=>{
+  const w=document.getElementById('stars-'+c.id);
+  for(let i=1;i<=5;i++){
+    const b=document.createElement('button');
+    b.className='sbtn';b.textContent=i;b.dataset.v=i;
+    b.onclick=()=>setR(c.id,i);w.appendChild(b);
+  }
+});
+function setR(id,v){
+  ratings[id]=v;
+  document.getElementById('stars-'+id).querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.v<=v));
+  document.getElementById('desc-'+id).textContent=DESCS[v];
+  liveScore();
+}
+function calcScore(r){return CRITERIA.reduce((s,c)=>s+(r[c.id]||0)*c.weight,0)}
+function liveScore(){
+  if(!CRITERIA.some(c=>ratings[c.id])){
+    document.getElementById('live-score').textContent='—';
+    document.getElementById('score-bar').style.width='0%';return;
+  }
+  const s=calcScore(ratings);
+  document.getElementById('live-score').textContent=s.toFixed(2);
+  document.getElementById('score-bar').style.width=(s/5*100)+'%';
+}
+document.getElementById('ddate').textContent='📅 '+
+  new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── Tabs ───────────────────────────────────────────────────
+function switchTab(t,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='board') renderBoard();
+}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitMuffin(){
+  const store=document.getElementById('store').value.trim();
+  if(!store){showToast('Please enter a store name');return}
+  const miss=CRITERIA.filter(c=>!ratings[c.id]);
+  if(miss.length){showToast('Still need: '+miss.map(c=>c.label).join(', '));return}
+  const entry={id:Date.now(),date:new Date().toISOString(),store,ratings:{...ratings},score:calcScore(ratings)};
+  const btn=document.getElementById('savebtn');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Saving…';
+  try{
+    const cache=lLoad();cache.push(entry);lSave(cache);
+    await gsAdd(entry);
+    resetForm();
+    showToast('🫐 Saved! Score: '+entry.score.toFixed(2));
+    setTimeout(()=>document.querySelectorAll('.tab')[1].click(),700);
+  }catch(err){
+    resetForm();
+    showToast('⚠ Error — saved locally as backup');
+    setTimeout(()=>document.querySelectorAll('.tab')[1].click(),700);
+  }finally{btn.disabled=false;btn.textContent='Save this muffin →'}
+}
+function resetForm(){
+  CRITERIA.forEach(c=>{
+    delete ratings[c.id];
+    document.getElementById('stars-'+c.id).querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
+    document.getElementById('desc-'+c.id).textContent='';
+  });
+  document.getElementById('store').value='';
+  document.getElementById('live-score').textContent='—';
+  document.getElementById('score-bar').style.width='0%';
+}
+
+// ── Leaderboard ────────────────────────────────────────────
+async function renderBoard(){
+  const lb=document.getElementById('lb');
+  lb.innerHTML='<div class="empty"><div class="ei">⏳</div><p>Loading…</p></div>';
+  let arr=[];
+  try{
+    arr=await gsRead();
+    if(!Array.isArray(arr))throw new Error();
+    lSave(arr);
+  }catch{
+    arr=lLoad();
+    showToast('⚠ Using local data — check connection');
+  }
+  arr.sort((a,b)=>b.score-a.score);
+  document.getElementById('lbc').textContent=arr.length+' muffin'+(arr.length!==1?'s':'')+' rated';
+  if(!arr.length){
+    lb.innerHTML='<div class="empty"><div class="ei">🫐</div><p>No muffins rated yet.<br>Go rate your first one!</p></div>';
+    return;
+  }
+  lb.innerHTML=arr.map((m,i)=>{
+    const rk=i+1,rc=rk<=3?'r'+rk:'';
+    const re=rk===1?'🥇':rk===2?'🥈':rk===3?'🥉':rk;
+    const ds=new Date(m.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const pct=((m.score/5)*100).toFixed(0);
+    const det=CRITERIA.map(c=>{
+      const v=m.ratings[c.id]||0;
+      const pips=[1,2,3,4,5].map(p=>'<div class="pip'+(p<=v?' on':'')+'"></div>').join('');
+      return '<div class="di"><div class="dil">'+c.label+' <span style="color:var(--blue)">'+(c.weight*100).toFixed(0)+'%</span></div><div class="div2">'+v+'/5</div><div class="pr">'+pips+'</div></div>';
+    }).join('');
+    const tags=CRITERIA.filter(c=>m.ratings[c.id]===5).map(c=>'<span class="tag">★ '+c.label+'</span>').join('');
+    return '<div class="mc '+rc+'">'
+      +'<div class="rb">'+re+'</div>'
+      +'<div class="cm">'
+        +'<div class="cs">'+esc(m.store)+'</div>'
+        +'<div class="cm2">'+ds+' · '+(+m.score).toFixed(2)+'/5 ('+pct+'%)</div>'
+        +(tags?'<div class="ctags">'+tags+'</div>':'')
+        +'<button class="dtog" onclick="toggleDet(this)">▾ show breakdown</button>'
+        +'<div class="cdet" style="display:none">'+det+'</div>'
+      +'</div>'
+      +'<div class="csc"><div class="bsc">'+(+m.score).toFixed(2)+'</div><div class="scl">/ 5.00</div></div>'
+      +'<button class="delbtn" onclick="delMuffin('+m.id+')">✕</button>'
+    +'</div>';
+  }).join('');
+}
+function toggleDet(btn){
+  const d=btn.nextElementSibling,open=d.style.display!=='none';
+  d.style.display=open?'none':'grid';
+  btn.textContent=open?'▾ show breakdown':'▴ hide breakdown';
+}
+async function delMuffin(id){
+  if(!confirm('Remove this muffin rating?'))return;
+  lSave(lLoad().filter(m=>m.id!==id));
+  await gsDelete(id);
+  showToast('Muffin removed');
+  renderBoard();
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
