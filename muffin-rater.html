@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muffin Rater 🫐</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#fdf6ee; --ink:#1a0f00; --blue:#2e4fa3; --blue-light:#dce6ff;
+    --blue-deep:#1a2d6b; --muffin:#b5722a; --muffin-light:#f5e2c8;
+    --cream:#fff9f2; --border:#e0c9a8; --text-muted:#7a6040; --tag-bg:#e8f0ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--ink);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:.6}
+  header{background:var(--blue-deep);color:#fff;padding:2rem 2rem 1.5rem;position:relative;overflow:hidden}
+  header::after{content:'🫐';position:absolute;right:-20px;top:-20px;font-size:8rem;opacity:.08;transform:rotate(-15deg)}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:900;letter-spacing:-.5px;line-height:1}
+  header h1 span{color:#a8c4ff}
+  header p{margin-top:.4rem;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+  .banner{background:#fffbe6;border-bottom:2px solid #f0c040;padding:.85rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .banner.ok{background:#edfaf3;border-color:#4caf82}
+  .b-icon{font-size:1.3rem;flex-shrink:0}
+  .b-text{flex:1;min-width:160px}
+  .b-title{font-size:.72rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#7a6010}
+  .banner.ok .b-title{color:#1a6040}
+  .b-sub{font-size:.67rem;color:#9a8030;margin-top:.1rem}
+  .banner.ok .b-sub{color:#2a8060}
+  .b-btn{padding:.45rem .9rem;background:var(--blue-deep);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.05em;cursor:pointer;white-space:nowrap}
+  .b-btn:hover{background:var(--blue)}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:1rem}
+  .overlay.open{display:flex}
+  .modal{background:var(--cream);border-radius:16px;max-width:620px;width:100%;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:92vh;overflow-y:auto}
+  .modal h2{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:.4rem}
+  .m-intro{font-size:.78rem;color:var(--text-muted);line-height:1.65;margin-bottom:.5rem}
+  .m-close{float:right;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);margin-top:-.3rem}
+  .step{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin:.85rem 0}
+  .s-num{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:500;margin-bottom:.35rem}
+  .step p{font-size:.79rem;line-height:1.7;color:var(--ink)}
+  .step a{color:var(--blue);font-weight:500}
+  .step code{display:block;background:#f0f4ff;border:1px solid #c8d8ff;border-radius:6px;padding:.6rem .8rem;font-size:.68rem;line-height:1.55;margin-top:.5rem;white-space:pre-wrap;word-break:break-all;color:var(--blue-deep)}
+  .cp-btn{margin-top:.45rem;padding:.32rem .75rem;background:var(--blue-light);border:1px solid var(--blue);border-radius:5px;color:var(--blue-deep);font-family:'DM Mono',monospace;font-size:.67rem;cursor:pointer}
+  .cp-btn:hover{background:var(--blue);color:#fff}
+  .url-row{margin-top:.5rem;display:flex;gap:.5rem}
+  .url-row input{flex:1;padding:.6rem .8rem;font-family:'DM Mono',monospace;font-size:.73rem;border:2px solid var(--border);border-radius:6px;outline:none;min-width:0}
+  .url-row input:focus{border-color:var(--blue)}
+  .url-row button{padding:.6rem 1rem;background:var(--blue-deep);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;white-space:nowrap}
+  .st{font-size:.7rem;color:var(--text-muted);padding:.5rem 0;min-height:1.8rem;line-height:1.6}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:4px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .tabs{display:flex;border-bottom:2px solid var(--border);background:var(--cream);padding:0 1.5rem}
+  .tab{padding:1rem 1.5rem;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+  .tab:hover{color:var(--blue)}
+  .tab.active{color:var(--blue-deep);border-bottom-color:var(--blue)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .fw{max-width:680px;margin:0 auto;padding:2rem 1.5rem 4rem}
+  .sec{font-family:'Playfair Display',serif;font-style:italic;font-size:1.05rem;color:var(--text-muted);margin:2rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem}
+  .sec::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0}
+  .field{margin-bottom:1.4rem}
+  .field label{display:flex;justify-content:space-between;align-items:baseline;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.5rem}
+  .field label .wt{font-size:.65rem;color:var(--blue);font-weight:500}
+  .stars{display:flex;gap:.4rem}
+  .sbtn{width:40px;height:40px;border:2px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:#ccc;font-weight:700;font-family:'DM Mono',monospace;font-size:.85rem}
+  .sbtn:hover{border-color:var(--blue);background:var(--blue-light);color:var(--blue-deep);transform:translateY(-2px)}
+  .sbtn.on{border-color:var(--blue);background:var(--blue);color:#fff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(46,79,163,.3)}
+  .rdesc{font-size:.65rem;color:var(--text-muted);margin-top:.35rem;letter-spacing:.03em;min-height:1em}
+  .tf{width:100%;padding:.75rem 1rem;font-family:'DM Mono',monospace;font-size:.85rem;border:2px solid var(--border);border-radius:8px;background:#fff;color:var(--ink);transition:border-color .2s;outline:none}
+  .tf:focus{border-color:var(--blue)}
+  .ddate{font-size:.85rem;color:var(--text-muted);padding:.75rem 1rem;background:var(--muffin-light);border:2px solid var(--border);border-radius:8px}
+  .savebtn{width:100%;padding:1rem;background:var(--blue-deep);color:#fff;border:none;border-radius:10px;font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;cursor:pointer;margin-top:2rem;transition:all .2s;letter-spacing:.02em}
+  .savebtn:hover{background:var(--blue);transform:translateY(-2px);box-shadow:0 6px 20px rgba(46,79,163,.35)}
+  .savebtn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .sp{background:var(--blue-deep);color:#fff;border-radius:12px;padding:1.25rem 1.5rem;margin-top:2rem;display:flex;align-items:center;justify-content:space-between}
+  .sp .lbl{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+  .sp .snum{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:900;letter-spacing:-1px;color:#a8c4ff}
+  .sbw{flex:1;margin:0 1.5rem;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+  .sbf{height:100%;background:linear-gradient(90deg,#a8c4ff,#fff);border-radius:3px;transition:width .4s ease}
+  .lbw{padding:1.5rem;max-width:800px;margin:0 auto}
+  .lbh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.5rem}
+  .lbt{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700}
+  .lbc{font-size:.7rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+  .empty{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+  .empty .ei{font-size:3rem;margin-bottom:1rem}
+  .empty p{font-size:.85rem;line-height:1.6}
+  .mc{background:#fff;border:2px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem;display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;transition:all .2s;position:relative;overflow:hidden}
+  .mc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+  .mc:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(46,79,163,.12);transform:translateY(-2px)}
+  .mc.r1::before{background:#f0a500}.mc.r2::before{background:#aaa}.mc.r3::before{background:var(--muffin)}
+  .rb{width:40px;height:40px;border-radius:50%;background:var(--blue-light);color:var(--blue-deep);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1rem;flex-shrink:0}
+  .mc.r1 .rb{background:#fef3d0;color:#a07000;font-size:1.2rem}.mc.r2 .rb{background:#f0f0f0;color:#666}.mc.r3 .rb{background:#f5e8d5;color:var(--muffin)}
+  .cm{min-width:0}
+  .cs{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cm2{font-size:.68rem;color:var(--text-muted);margin-top:.2rem;letter-spacing:.05em}
+  .ctags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}
+  .tag{font-size:.62rem;padding:.2rem .5rem;background:var(--tag-bg);color:var(--blue-deep);border-radius:4px;letter-spacing:.05em;text-transform:uppercase}
+  .csc{text-align:right;flex-shrink:0}
+  .bsc{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--blue-deep);line-height:1}
+  .scl{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;margin-top:.2rem}
+  .dtog{width:100%;background:none;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--blue);text-align:left;padding:.5rem 0 0;letter-spacing:.05em;text-transform:uppercase}
+  .cdet{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.5rem}
+  .di{background:var(--bg);border-radius:6px;padding:.4rem .6rem}
+  .dil{font-size:.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+  .div2{font-size:.85rem;font-weight:500;color:var(--ink);margin-top:.1rem}
+  .pr{display:flex;gap:2px;margin-top:.2rem}
+  .pip{width:10px;height:6px;border-radius:2px;background:var(--border)}
+  .pip.on{background:var(--blue)}
+  .delbtn{position:absolute;top:.75rem;right:.75rem;background:none;border:1px solid var(--border);border-radius:4px;padding:.2rem .4rem;font-size:.65rem;color:var(--text-muted);cursor:pointer;transition:all .15s}
+  .delbtn:hover{background:#fee;border-color:#f66;color:#c00}
+  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--blue-deep);color:#fff;padding:.75rem 1.5rem;border-radius:40px;font-size:.8rem;font-family:'DM Mono',monospace;letter-spacing:.05em;transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:1000;box-shadow:0 8px 30px rgba(0,0,0,.25);white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  @media(max-width:520px){
+    .mc{grid-template-columns:auto 1fr auto}
+    .cdet{grid-template-columns:repeat(2,1fr)}
+    .sbtn{width:34px;height:34px;font-size:.8rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Muffin <span>Rater</span></h1>
+  <p>Blueberry Muffin Rating System · Weighted Scoring</p>
+</header>
+
+<div class="banner" id="banner">
+  <div class="b-icon">⚙️</div>
+  <div class="b-text">
+    <div class="b-title" id="b-title">Google Sheets not connected</div>
+    <div class="b-sub" id="b-sub">Data saves locally only — connect to sync across all devices</div>
+  </div>
+  <button class="b-btn" id="b-btn" onclick="openModal()">Connect Sheets →</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="m-close" onclick="closeModal()">✕</button>
+    <h2>Connect Google Sheets</h2>
+    <p class="m-intro">Paste the new script below into your Apps Script editor (replacing the old one), re-deploy, then paste the URL here. This version handles cross-origin requests correctly.</p>
+
+    <div class="step">
+      <div class="s-num">Step 1 — Replace your Apps Script code</div>
+      <p>In your Google Sheet go to <strong>Extensions → Apps Script</strong>. Select all the existing code, delete it, and paste this replacement:</p>
+      <code id="script-code">const SHEET_NAME = "Muffins";
+
+function doGet(e) {
+  const action = e.parameter.action || "";
+  let data;
+  if (action === "read") {
+    data = readAll();
+  } else {
+    data = { error: "unknown action" };
+  }
+  // Return with permissive CORS headers
+  return buildResponse(data);
+}
+
+function doPost(e) {
+  let result;
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    if (payload.action === "add")         result = addRow(payload.entry);
+    else if (payload.action === "delete") result = deleteRow(payload.id);
+    else                                  result = { error: "unknown action" };
+  } catch(err) {
+    result = { error: err.message };
+  }
+  return buildResponse(result);
+}
+
+function buildResponse(data) {
+  const output = ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+  return output;
+}
+
+function getSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let s = ss.getSheetByName(SHEET_NAME);
+  if (!s) {
+    s = ss.insertSheet(SHEET_NAME);
+    s.appendRow(["id","date","store",
+      "berryQuality","berrySize","berryCount",
+      "muffinSize","density","top","doughFlavor",
+      "cost","score"]);
+    s.setFrozenRows(1);
+  }
+  return s;
+}
+
+function readAll() {
+  const rows = getSheet().getDataRange().getValues();
+  if (rows.length <= 1) return [];
+  const headers = rows[0];
+  return rows.slice(1).map(r => {
+    const o = {};
+    headers.forEach((h, i) => o[h] = r[i]);
+    o.ratings = {
+      berryQuality: +o.berryQuality, berrySize:   +o.berrySize,
+      berryCount:   +o.berryCount,   muffinSize:  +o.muffinSize,
+      density:      +o.density,      top:         +o.top,
+      doughFlavor:  +o.doughFlavor,  cost:        +o.cost
+    };
+    o.score = +o.score;
+    return o;
+  });
+}
+
+function addRow(e) {
+  const r = e.ratings;
+  getSheet().appendRow([
+    e.id, e.date, e.store,
+    r.berryQuality, r.berrySize, r.berryCount,
+    r.muffinSize,   r.density,   r.top,
+    r.doughFlavor,  r.cost,      e.score
+  ]);
+  return { ok: true };
+}
+
+function deleteRow(id) {
+  const sheet = getSheet();
+  const vals  = sheet.getDataRange().getValues();
+  for (let i = 1; i < vals.length; i++) {
+    if (String(vals[i][0]) === String(id)) {
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { ok: true, note: "not found" };
+}</code>
+      <button class="cp-btn" onclick="copyScript()">📋 Copy script</button>
+    </div>
+
+    <div class="step">
+      <div class="s-num">Step 2 — Create a NEW deployment</div>
+      <p>
+        ⚠️ <strong>Important:</strong> you must create a <em>new</em> deployment, not update the old one.<br><br>
+        In Apps Script: <strong>Deploy → New deployment</strong><br>
+        · Gear ⚙ → <strong>Web app</strong><br>
+        · Execute as: <strong>Me</strong><br>
+        · Who has access: <strong>Anyone</strong><br><br>
+        Click <strong>Deploy</strong>, authorize if asked, then copy the new <strong>Web app URL</strong>.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="s-num">Step 3 — Verify it works first</div>
+      <p>Before pasting the URL below, open it in a new browser tab and add <code style="display:inline;padding:1px 4px;font-size:.75em">?action=read</code> to the end. You should see <code style="display:inline;padding:1px 4px;font-size:.75em">[]</code>.<br><br>
+      Example: <code>https://script.google.com/macros/s/YOUR_ID/exec?action=read</code></p>
+    </div>
+
+    <div class="step">
+      <div class="s-num">Step 4 — Paste URL &amp; connect</div>
+      <div class="url-row">
+        <input type="text" id="url-input" placeholder="https://script.google.com/macros/s/…/exec">
+        <button onclick="saveUrl()">Test &amp; Save</button>
+      </div>
+      <div class="st" id="url-st"></div>
+    </div>
+
+    <div class="step" id="disc-step" style="display:none">
+      <div class="s-num">✅ Currently Connected</div>
+      <p>Syncing with Google Sheets across all devices.<br>
+      <button class="cp-btn" style="margin-top:.5rem" onclick="disconnectSheets()">Disconnect</button></p>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('rate',this)">🫐 Rate a Muffin</button>
+  <button class="tab" onclick="switchTab('board',this)">📋 Rankings</button>
+</div>
+
+<div id="panel-rate" class="panel active">
+  <div class="fw">
+    <div class="field">
+      <label>Date <span class="wt">auto-filled</span></label>
+      <div class="ddate" id="ddate">📅 —</div>
+    </div>
+    <div class="field">
+      <label>Store / Source <span class="wt">required</span></label>
+      <input type="text" class="tf" id="store" placeholder="e.g. Costco, Whole Foods, local bakery…" autocomplete="off">
+    </div>
+    <div class="sec">Blueberry Quality</div>
+    <div class="field"><label>Berry Quality <span class="wt">10%</span></label><div class="stars" id="stars-berryQuality"></div><div class="rdesc" id="desc-berryQuality"></div></div>
+    <div class="field"><label>Berry Size <span class="wt">10%</span></label><div class="stars" id="stars-berrySize"></div><div class="rdesc" id="desc-berrySize"></div></div>
+    <div class="field"><label>Berry Count <span class="wt">15%</span></label><div class="stars" id="stars-berryCount"></div><div class="rdesc" id="desc-berryCount"></div></div>
+    <div class="sec">Muffin Quality</div>
+    <div class="field"><label>Muffin Size <span class="wt">10%</span></label><div class="stars" id="stars-muffinSize"></div><div class="rdesc" id="desc-muffinSize"></div></div>
+    <div class="field"><label>Density <span class="wt">15%</span></label><div class="stars" id="stars-density"></div><div class="rdesc" id="desc-density"></div></div>
+    <div class="field"><label>Top Deliciousness <span class="wt">15%</span></label><div class="stars" id="stars-top"></div><div class="rdesc" id="desc-top"></div></div>
+    <div class="field"><label>Dough Flavor <span class="wt">15%</span></label><div class="stars" id="stars-doughFlavor"></div><div class="rdesc" id="desc-doughFlavor"></div></div>
+    <div class="sec">General</div>
+    <div class="field"><label>Cost Value <span class="wt">10%</span></label><div class="stars" id="stars-cost"></div><div class="rdesc" id="desc-cost"></div></div>
+    <div class="sp">
+      <div><div class="lbl">Weighted Score</div><div class="snum" id="live-score">—</div></div>
+      <div class="sbw"><div class="sbf" id="score-bar" style="width:0%"></div></div>
+      <div style="text-align:right"><div class="lbl">Out of</div><div class="snum" style="color:rgba(255,255,255,.3)">5.00</div></div>
+    </div>
+    <button class="savebtn" id="savebtn" onclick="submitMuffin()">Save this muffin →</button>
+  </div>
+</div>
+
+<div id="panel-board" class="panel">
+  <div class="lbw">
+    <div class="lbh">
+      <div class="lbt">Rankings</div>
+      <div class="lbc" id="lbc">0 muffins rated</div>
+    </div>
+    <div id="lb"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CRITERIA=[
+  {id:'berryQuality',label:'Berry Quality',weight:.10},
+  {id:'berrySize',   label:'Berry Size',   weight:.10},
+  {id:'berryCount',  label:'Berry Count',  weight:.15},
+  {id:'muffinSize',  label:'Muffin Size',  weight:.10},
+  {id:'density',     label:'Density',      weight:.15},
+  {id:'top',         label:'Top Deliciousness',weight:.15},
+  {id:'doughFlavor', label:'Dough Flavor', weight:.15},
+  {id:'cost',        label:'Cost Value',   weight:.10},
+];
+const DESCS={1:'Poor',2:'Below average',3:'Decent',4:'Very good',5:'Exceptional'};
+
+const GS_KEY='muffin_gs_url';
+let gsUrl=localStorage.getItem(GS_KEY)||'';
+
+// ── Google Sheets calls ────────────────────────────────────
+// GET requests work fine cross-origin (no preflight needed).
+// POST requests use text/plain content-type to avoid CORS preflight.
+async function gsRead(){
+  const res = await fetch(gsUrl+'?action=read', {
+    method: 'GET',
+    redirect: 'follow'
+  });
+  const text = await res.text();
+  return JSON.parse(text);
+}
+
+async function gsPost(payload){
+  // Using text/plain avoids a CORS preflight OPTIONS request
+  // which Google Apps Script doesn't handle for cross-origin.
+  await fetch(gsUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  // no-cors returns opaque response; data still saves in the sheet
+}
+
+async function gsAdd(entry){ await gsPost({action:'add',entry}) }
+async function gsDelete(id){ await gsPost({action:'delete',id}) }
+
+// ── Local fallback ─────────────────────────────────────────
+function lLoad(){try{return JSON.parse(localStorage.getItem('muffins')||'[]')}catch{return[]}}
+function lSave(a){localStorage.setItem('muffins',JSON.stringify(a))}
+
+// ── Banner / Modal ─────────────────────────────────────────
+function refreshBanner(){
+  const bn=document.getElementById('banner');
+  if(gsUrl){
+    bn.classList.add('ok');
+    document.getElementById('b-title').textContent='Google Sheets connected ✓';
+    document.getElementById('b-sub').textContent='Ratings sync across all your devices';
+    document.getElementById('b-btn').textContent='Manage connection';
+    document.getElementById('disc-step').style.display='block';
+  } else {
+    bn.classList.remove('ok');
+    document.getElementById('b-title').textContent='Google Sheets not connected';
+    document.getElementById('b-sub').textContent='Data saves locally only — connect to sync across all devices';
+    document.getElementById('b-btn').textContent='Connect Sheets →';
+    document.getElementById('disc-step').style.display='none';
+  }
+}
+function openModal(){
+  document.getElementById('overlay').classList.add('open');
+  if(gsUrl) document.getElementById('url-input').value=gsUrl;
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open')}
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+function copyScript(){
+  navigator.clipboard.writeText(document.getElementById('script-code').textContent)
+    .then(()=>showToast('Script copied!'));
+}
+
+async function saveUrl(){
+  const v=document.getElementById('url-input').value.trim();
+  if(!v||!v.includes('script.google.com')){
+    setSt('⚠️ Paste a valid Google Apps Script URL','color:#b8800a');return;
+  }
+  setSt('<span class="spin"></span> Testing…','');
+  try{
+    // Test by hitting ?action=read directly
+    const res = await fetch(v+'?action=read', { method:'GET', redirect:'follow' });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { throw new Error('Response was not JSON. Got: '+text.slice(0,80)); }
+    if(!Array.isArray(data)) throw new Error('Expected an array. Got: '+text.slice(0,80));
+    gsUrl=v;
+    localStorage.setItem(GS_KEY,v);
+    setSt('✅ Connected! Found '+data.length+' existing rating(s).','color:green');
+    refreshBanner();
+    lSave(data);
+    setTimeout(()=>{closeModal();renderBoard()},1400);
+  } catch(err){
+    setSt(
+      '❌ ' + err.message + '<br><br>' +
+      '<strong>To fix:</strong> open <a href="'+v+'?action=read" target="_blank">this link</a> in a new tab. ' +
+      'It should show <code style="background:#fee;padding:0 3px">[]</code>. ' +
+      'If you see a login page or an error, re-deploy as a new deployment with "Who has access: Anyone".',
+      'color:#c00'
+    );
+  }
+}
+function setSt(h,s){const e=document.getElementById('url-st');e.innerHTML=h;e.style.cssText=s}
+function disconnectSheets(){
+  if(!confirm('Disconnect? New ratings will only save locally.'))return;
+  gsUrl='';localStorage.removeItem(GS_KEY);refreshBanner();closeModal();
+  showToast('Disconnected from Google Sheets');
+}
+
+// ── Stars ──────────────────────────────────────────────────
+const ratings={};
+CRITERIA.forEach(c=>{
+  const w=document.getElementById('stars-'+c.id);
+  for(let i=1;i<=5;i++){
+    const b=document.createElement('button');
+    b.className='sbtn';b.textContent=i;b.dataset.v=i;
+    b.onclick=()=>setR(c.id,i);w.appendChild(b);
+  }
+});
+function setR(id,v){
+  ratings[id]=v;
+  document.getElementById('stars-'+id).querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.v<=v));
+  document.getElementById('desc-'+id).textContent=DESCS[v];
+  liveScore();
+}
+function calcScore(r){return CRITERIA.reduce((s,c)=>s+(r[c.id]||0)*c.weight,0)}
+function liveScore(){
+  if(!CRITERIA.some(c=>ratings[c.id])){
+    document.getElementById('live-score').textContent='—';
+    document.getElementById('score-bar').style.width='0%';return;
+  }
+  const s=calcScore(ratings);
+  document.getElementById('live-score').textContent=s.toFixed(2);
+  document.getElementById('score-bar').style.width=(s/5*100)+'%';
+}
+document.getElementById('ddate').textContent='📅 '+
+  new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// ── Tabs ───────────────────────────────────────────────────
+function switchTab(t,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='board') renderBoard();
+}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitMuffin(){
+  const store=document.getElementById('store').value.trim();
+  if(!store){showToast('Please enter a store name');return}
+  const miss=CRITERIA.filter(c=>!ratings[c.id]);
+  if(miss.length){showToast('Still need: '+miss.map(c=>c.label).join(', '));return}
+  const entry={id:Date.now(),date:new Date().toISOString(),store,ratings:{...ratings},score:calcScore(ratings)};
+  const btn=document.getElementById('savebtn');
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    // Always save locally first as cache
+    const a=lLoad(); a.push(entry); lSave(a);
+    if(gsUrl) await gsAdd(entry);
+    resetForm();
+    showToast('🫐 Saved! Score: '+entry.score.toFixed(2));
+    setTimeout(()=>document.querySelectorAll('.tab')[1].click(),700);
+  }catch(err){
+    resetForm();
+    showToast('⚠ Error saving — check console');
+  }finally{btn.disabled=false;btn.textContent='Save this muffin →'}
+}
+function resetForm(){
+  CRITERIA.forEach(c=>{
+    delete ratings[c.id];
+    document.getElementById('stars-'+c.id).querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
+    document.getElementById('desc-'+c.id).textContent='';
+  });
+  document.getElementById('store').value='';
+  document.getElementById('live-score').textContent='—';
+  document.getElementById('score-bar').style.width='0%';
+}
+
+// ── Leaderboard ────────────────────────────────────────────
+async function renderBoard(){
+  const lb=document.getElementById('lb');
+  lb.innerHTML='<div class="empty"><div class="ei"><span class="spin" style="width:2rem;height:2rem;border-width:3px"></span></div><p>Loading…</p></div>';
+  let arr=[];
+  try{
+    if(gsUrl){
+      arr=await gsRead();
+      if(!Array.isArray(arr)) throw new Error('bad response');
+      lSave(arr); // update local cache
+    } else {
+      arr=lLoad();
+    }
+  }catch{
+    arr=lLoad();
+    showToast('⚠ Sheets unreachable — showing local data');
+  }
+  arr.sort((a,b)=>b.score-a.score);
+  document.getElementById('lbc').textContent=arr.length+' muffin'+(arr.length!==1?'s':'')+' rated';
+  if(!arr.length){
+    lb.innerHTML='<div class="empty"><div class="ei">🫐</div><p>No muffins rated yet.<br>Go rate your first one!</p></div>';
+    return;
+  }
+  lb.innerHTML=arr.map((m,i)=>{
+    const rk=i+1,rc=rk<=3?'r'+rk:'';
+    const re=rk===1?'🥇':rk===2?'🥈':rk===3?'🥉':rk;
+    const ds=new Date(m.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const pct=((m.score/5)*100).toFixed(0);
+    const det=CRITERIA.map(c=>{
+      const v=m.ratings[c.id]||0;
+      const pips=[1,2,3,4,5].map(p=>'<div class="pip'+(p<=v?' on':'')+'"></div>').join('');
+      return '<div class="di"><div class="dil">'+c.label+' <span style="color:var(--blue)">'+(c.weight*100).toFixed(0)+'%</span></div><div class="div2">'+v+'/5</div><div class="pr">'+pips+'</div></div>';
+    }).join('');
+    const tags=CRITERIA.filter(c=>m.ratings[c.id]===5).map(c=>'<span class="tag">★ '+c.label+'</span>').join('');
+    return '<div class="mc '+rc+'">'
+      +'<div class="rb">'+re+'</div>'
+      +'<div class="cm">'
+        +'<div class="cs">'+esc(m.store)+'</div>'
+        +'<div class="cm2">'+ds+' · '+(+m.score).toFixed(2)+'/5 ('+pct+'%)</div>'
+        +(tags?'<div class="ctags">'+tags+'</div>':'')
+        +'<button class="dtog" onclick="toggleDet(this)">▾ show breakdown</button>'
+        +'<div class="cdet" style="display:none">'+det+'</div>'
+      +'</div>'
+      +'<div class="csc"><div class="bsc">'+(+m.score).toFixed(2)+'</div><div class="scl">/ 5.00</div></div>'
+      +'<button class="delbtn" onclick="delMuffin('+m.id+')">✕</button>'
+    +'</div>';
+  }).join('');
+}
+function toggleDet(btn){
+  const d=btn.nextElementSibling,open=d.style.display!=='none';
+  d.style.display=open?'none':'grid';
+  btn.textContent=open?'▾ show breakdown':'▴ hide breakdown';
+}
+async function delMuffin(id){
+  if(!confirm('Remove this muffin rating?'))return;
+  lSave(lLoad().filter(m=>m.id!==id));
+  if(gsUrl) await gsDelete(id);
+  showToast('Muffin removed');
+  renderBoard();
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+refreshBanner();
+</script>
+</body>
+</html>
