@@ -11,6 +11,8 @@
     --blue-deep:#1a2d6b; --muffin:#b5722a; --muffin-light:#f5e2c8;
     --cream:#fff9f2; --border:#e0c9a8; --text-muted:#7a6040; --tag-bg:#e8f0ff;
     --green:#2a7a4a; --green-bg:#edfaf3; --green-border:#4caf82;
+    --amber:#9a6500; --amber-bg:#fff7df; --amber-border:#e7b84d;
+    --red:#9d2424; --red-bg:#fff0f0; --red-border:#e68a8a;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--ink);min-height:100vh}
@@ -29,6 +31,12 @@
 
   /* BANNER */
   .banner{background:var(--green-bg);border-bottom:2px solid var(--green-border);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem}
+  .banner.pending{background:var(--amber-bg);border-bottom-color:var(--amber-border)}
+  .banner.pending .b-title{color:var(--amber)}
+  .banner.pending .b-sub{color:#8a6b20}
+  .banner.offline{background:var(--red-bg);border-bottom-color:var(--red-border)}
+  .banner.offline .b-title{color:var(--red)}
+  .banner.offline .b-sub{color:#8a3838}
   .b-icon{font-size:1.1rem;flex-shrink:0}
   .b-title{font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#1a6040}
   .b-sub{font-size:.64rem;color:#2a8060;margin-top:.1rem}
@@ -54,6 +62,7 @@
   .sbtn{width:46px;height:46px;border:2px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:#ccc;font-weight:700;font-family:'DM Mono',monospace;font-size:.9rem;touch-action:manipulation}
   .sbtn:hover{border-color:var(--blue);background:var(--blue-light);color:var(--blue-deep);transform:translateY(-2px)}
   .sbtn.on{border-color:var(--blue);background:var(--blue);color:#fff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(46,79,163,.3)}
+  .scale-hints{display:flex;justify-content:space-between;max-width:248px;font-size:.58rem;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.28rem}
   .rdesc{font-size:.65rem;color:var(--text-muted);margin-top:.35rem;letter-spacing:.03em;min-height:1em}
 
   /* TEXT FIELDS */
@@ -64,6 +73,17 @@
   .date-input{width:100%;padding:.75rem 1rem;font-family:'DM Mono',monospace;font-size:.85rem;border:2px solid var(--border);border-radius:8px;background:#fff;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none}
   .date-input:focus{border-color:var(--blue)}
   .date-input::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
+
+  /* PHOTO */
+  .photo-slot{border:2px dashed var(--border);border-radius:10px;background:#fff;padding:1rem;display:grid;grid-template-columns:88px 1fr;gap:1rem;align-items:center}
+  .photo-preview{width:88px;height:88px;border-radius:8px;background:var(--muffin-light);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-muted);font-size:1.8rem}
+  .photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
+  .photo-copy{font-size:.68rem;color:var(--text-muted);line-height:1.5}
+  .photo-actions{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.55rem}
+  .file-input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .file-label,.clear-photo{border:1.5px solid var(--border);border-radius:6px;background:#fff;color:var(--blue-deep);font-family:'DM Mono',monospace;font-size:.68rem;padding:.4rem .65rem;cursor:pointer;letter-spacing:.04em;text-transform:uppercase}
+  .file-label:hover,.clear-photo:hover{border-color:var(--blue);background:var(--blue-light)}
+  .clear-photo{color:var(--text-muted)}
 
   /* SCORE PREVIEW */
   .sp{background:var(--blue-deep);color:#fff;border-radius:12px;padding:1.25rem 1.5rem;margin-top:2rem;display:flex;align-items:center;justify-content:space-between}
@@ -105,6 +125,7 @@
   .cm{min-width:0}
   .cs{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cm2{font-size:.66rem;color:var(--text-muted);margin-top:.2rem;letter-spacing:.04em}
+  .mphoto{width:100%;max-width:220px;aspect-ratio:4/3;border-radius:8px;margin-top:.55rem;object-fit:cover;border:1px solid var(--border);display:block}
   .ctags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.45rem}
   .tag{font-size:.6rem;padding:.18rem .45rem;background:var(--tag-bg);color:var(--blue-deep);border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
 
@@ -140,9 +161,16 @@
 
   @media(max-width:560px){
     .stats-grid{grid-template-columns:repeat(2,1fr)}
-    .mc{grid-template-columns:auto 1fr auto auto}
+    .photo-slot{grid-template-columns:72px 1fr}
+    .photo-preview{width:72px;height:72px}
+    .mc{grid-template-columns:auto 1fr auto;align-items:start}
+    .csc{grid-column:2/4;text-align:left;display:flex;align-items:center;gap:.55rem;margin-top:.2rem}
+    .csc .scl{margin-top:0}
+    .score-bar{margin-left:0;width:76px;margin-top:0}
+    .delbtn{grid-column:3;grid-row:1}
     .cdet{grid-template-columns:repeat(2,1fr)}
     .sbtn{width:40px;height:40px}
+    .scale-hints{max-width:216px}
     .h-stats{display:none}
   }
 </style>
@@ -161,11 +189,11 @@
   </div>
 </header>
 
-<div class="banner">
-  <div class="b-icon">☁️</div>
+<div class="banner pending" id="sync-banner">
+  <div class="b-icon" id="sync-icon">☁️</div>
   <div class="b-text">
-    <div class="b-title">Google Sheets connected ✓</div>
-    <div class="b-sub">Ratings sync across all your devices automatically</div>
+    <div class="b-title" id="sync-title">Checking Google Sheets</div>
+    <div class="b-sub" id="sync-sub">Ratings are saved locally first, then synced when available</div>
   </div>
 </div>
 
@@ -179,13 +207,28 @@
   <div class="fw">
 
     <div class="field">
-      <label>Date <span class="wt">editable</span></label>
+      <label for="activity-date">Date <span class="wt">editable</span></label>
       <input type="date" class="date-input" id="activity-date">
     </div>
 
     <div class="field">
-      <label>Store / Source <span class="wt">required</span></label>
+      <label for="store">Store / Source <span class="wt">required</span></label>
       <input type="text" class="tf" id="store" placeholder="e.g. Costco, Whole Foods, local bakery…" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="photo-upload">Photo <span class="wt">optional</span></label>
+      <div class="photo-slot">
+        <div class="photo-preview" id="photo-preview" aria-live="polite">📷</div>
+        <div>
+          <div class="photo-copy">Add a muffin photo for the rankings card.</div>
+          <div class="photo-actions">
+            <input class="file-input" type="file" id="photo-upload" accept="image/*">
+            <label class="file-label" for="photo-upload">Choose photo</label>
+            <button type="button" class="clear-photo" id="clear-photo" onclick="clearPhoto()" hidden>Remove</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="sec">Blueberry Quality</div>
@@ -261,6 +304,7 @@ const CRITERIA=[
   {id:'cost',        label:'Cost Value',     weight:.10},
 ];
 const DESCS={1:'Poor',2:'Below average',3:'Decent',4:'Very good',5:'Exceptional'};
+let photoData='';
 
 const GS_URL='https://script.google.com/macros/s/AKfycbzv9fExhHEqEjhRVZFTuzgrtJWXZCGaz66JnQDHuWcs91ATGwblHSyvMEqZWWlTTx-wcw/exec';
 
@@ -271,6 +315,14 @@ async function gsDelete(id){await gsWrite({action:'delete',id})}
 
 function lLoad(){try{return JSON.parse(localStorage.getItem('muffins')||'[]')}catch{return[]}}
 function lSave(a){localStorage.setItem('muffins',JSON.stringify(a))}
+
+function setSyncStatus(state,title,sub,icon){
+  const b=document.getElementById('sync-banner');
+  b.className='banner '+state;
+  document.getElementById('sync-title').textContent=title;
+  document.getElementById('sync-sub').textContent=sub;
+  document.getElementById('sync-icon').textContent=icon;
+}
 
 // ── Score colour ───────────────────────────────────────────
 function scoreColor(s){
@@ -292,16 +344,27 @@ function todayISO(){
 const ratings={};
 CRITERIA.forEach(c=>{
   const w=document.getElementById('stars-'+c.id);
+  w.setAttribute('role','group');
+  w.setAttribute('aria-label',c.label+' rating, 1 poor to 5 exceptional');
+  w.insertAdjacentHTML('beforebegin','<div class="scale-hints" aria-hidden="true"><span>1 Poor</span><span>5 Exceptional</span></div>');
   for(let i=1;i<=5;i++){
     const b=document.createElement('button');
+    b.type='button';
     b.className='sbtn';b.textContent=i;b.dataset.v=i;
+    b.setAttribute('aria-label',c.label+': '+i+' of 5, '+DESCS[i]);
+    b.setAttribute('aria-pressed','false');
+    b.title=DESCS[i];
     b.onclick=()=>setR(c.id,i);w.appendChild(b);
   }
 });
 
 function setR(id,v){
   ratings[id]=v;
-  document.getElementById('stars-'+id).querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',+b.dataset.v<=v));
+  document.getElementById('stars-'+id).querySelectorAll('.sbtn').forEach(b=>{
+    const on=+b.dataset.v<=v;
+    b.classList.toggle('on',on);
+    b.setAttribute('aria-pressed',on?'true':'false');
+  });
   document.getElementById('desc-'+id).textContent=DESCS[v];
   liveScore();
 }
@@ -316,6 +379,54 @@ function liveScore(){
   const s=calcScore(ratings);
   document.getElementById('live-score').textContent=s.toFixed(2);
   document.getElementById('score-bar').style.width=(s/5*100)+'%';
+}
+
+async function handlePhoto(e){
+  const file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){
+    showToast('Please choose an image file');
+    e.target.value='';
+    return;
+  }
+  try{
+    photoData=await resizePhoto(file);
+    document.getElementById('photo-preview').innerHTML='<img src="'+photoData+'" alt="Selected muffin photo">';
+    document.getElementById('clear-photo').hidden=false;
+  }catch{
+    showToast('Could not load that photo');
+    clearPhoto();
+  }
+}
+
+function resizePhoto(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=reject;
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=reject;
+      img.onload=()=>{
+        const max=900;
+        const scale=Math.min(1,max/Math.max(img.width,img.height));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.round(img.width*scale);
+        canvas.height=Math.round(img.height*scale);
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',.78));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function clearPhoto(){
+  photoData='';
+  document.getElementById('photo-upload').value='';
+  document.getElementById('photo-preview').textContent='📷';
+  document.getElementById('clear-photo').hidden=true;
 }
 
 
@@ -342,19 +453,23 @@ async function submitMuffin(){
     date:new Date(dateVal+'T12:00:00').toISOString(),
     store,
     ratings:{...ratings},
-    score:calcScore(ratings)
+    score:calcScore(ratings),
+    photo:photoData
   };
 
   const btn=document.getElementById('savebtn');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Saving…';
   try{
     const cache=lLoad();cache.push(entry);lSave(cache);
+    setSyncStatus('pending','Saving to Google Sheets','A local copy has already been saved','☁️');
     await gsAdd(entry);
     resetForm();
+    setSyncStatus('','Google Sheets sync active','Latest rating was sent for sync','✓');
     showToast('🫐 Saved! Score: '+entry.score.toFixed(2));
     setTimeout(()=>document.querySelectorAll('.tab')[1].click(),700);
   }catch(err){
     resetForm();
+    setSyncStatus('offline','Saved locally','Google Sheets could not be reached just now','!');
     showToast('⚠ Saved locally as backup');
     setTimeout(()=>document.querySelectorAll('.tab')[1].click(),700);
   }finally{btn.disabled=false;btn.textContent='Save this muffin →'}
@@ -368,6 +483,7 @@ function resetForm(){
   });
   document.getElementById('store').value='';
   document.getElementById('activity-date').value=todayISO();
+  clearPhoto();
   document.getElementById('live-score').textContent='—';
   document.getElementById('score-bar').style.width='0%';
 }
@@ -380,11 +496,14 @@ async function renderBoard(){
   else lb.innerHTML='<div class="empty"><div class="ei">⏳</div><p>Loading…</p></div>';
 
   try{
+    setSyncStatus('pending','Checking Google Sheets','Refreshing rankings from the shared sheet','☁️');
     const fresh=await gsRead();
     if(!Array.isArray(fresh))throw new Error();
     lSave(fresh);
     renderBoardFromData(fresh);
+    setSyncStatus('','Google Sheets sync active','Rankings are up to date on this device','✓');
   }catch{
+    setSyncStatus('offline','Using local ratings','Google Sheets could not be reached just now','!');
     if(!cached.length) lb.innerHTML='<div class="empty"><div class="ei">⚠️</div><p>Could not load. Check connection.</p></div>';
   }
 }
@@ -426,6 +545,7 @@ function renderBoardFromData(arr){
     const pct=((m.score/5)*100).toFixed(0);
     const col=scoreColor(+m.score);
     const barW=((+m.score/5)*100).toFixed(1);
+    const photo=m.photo?'<img class="mphoto" src="'+esc(m.photo)+'" alt="Photo of muffin from '+esc(m.store)+'">':'';
     const det=CRITERIA.map(c=>{
       const v=m.ratings[c.id]||0;
       const pips=[1,2,3,4,5].map(p=>'<div class="pip'+(p<=v?' on':'')+'"></div>').join('');
@@ -437,6 +557,7 @@ function renderBoardFromData(arr){
       +'<div class="cm">'
         +'<div class="cs">'+esc(m.store)+'</div>'
         +'<div class="cm2">'+ds+' · '+pct+'%</div>'
+        +photo
         +(tags?'<div class="ctags">'+tags+'</div>':'')
         +'<button class="dtog" onclick="toggleDet(this)">▾ breakdown</button>'
         +'<div class="cdet" style="display:none">'+det+'</div>'
@@ -452,7 +573,11 @@ function renderBoardFromData(arr){
 }
 
 function updateSummaryStats(arr){
-  if(!arr.length) return;
+  if(!arr.length){
+    ['sg-count','hstat-count'].forEach(id=>document.getElementById(id).textContent='0');
+    ['sg-avg','sg-best','sg-top','hstat-avg','hstat-top'].forEach(id=>document.getElementById(id).textContent='—');
+    return;
+  }
   const count=arr.length;
   const avg=(arr.reduce((s,m)=>s+(+m.score||0),0)/count);
   const top=Math.max(...arr.map(m=>+m.score||0));
@@ -469,7 +594,7 @@ function updateSummaryStats(arr){
 
   document.getElementById('sg-count').textContent=count;
   document.getElementById('sg-avg').textContent=avg.toFixed(2);
-  document.getElementById('sg-best').textContent=bestStore?bestStore[0].split(' ')[0]:'—';
+  document.getElementById('sg-best').textContent=bestStore?bestStore[0]:'—';
   document.getElementById('sg-top').textContent=top.toFixed(2);
   // Header stats
   document.getElementById('hstat-count').textContent=count;
@@ -486,8 +611,15 @@ function toggleDet(btn){
 async function delMuffin(id){
   if(!confirm('Remove this muffin rating?'))return;
   lSave(lLoad().filter(m=>m.id!==id));
-  await gsDelete(id);
-  showToast('Muffin removed');
+  setSyncStatus('pending','Removing from Google Sheets','The local ranking has already been updated','☁️');
+  try{
+    await gsDelete(id);
+    setSyncStatus('','Google Sheets sync active','Delete was sent for sync','✓');
+    showToast('Muffin removed');
+  }catch{
+    setSyncStatus('offline','Removed locally','Google Sheets could not be reached just now','!');
+    showToast('Removed locally');
+  }
   renderBoard();
 }
 
@@ -499,8 +631,9 @@ function showToast(msg){
 
 // ── Init ───────────────────────────────────────────────────
 document.getElementById('activity-date').value=todayISO();
+document.getElementById('photo-upload').addEventListener('change',handlePhoto);
 const cached=lLoad();
-if(cached.length) updateSummaryStats(cached);
+updateSummaryStats(cached);
 </script>
 </body>
 </html>
